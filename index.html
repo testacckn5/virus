@@ -2,170 +2,119 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>kvn.os - Security Breach</title>
+  <title>kvn.os Crash</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     html, body {
       margin: 0;
       padding: 0;
-      font-family: Segoe UI, sans-serif;
-      background-color: #f2f2f2;
+      background: #0078D7; /* Windows BSOD Blue */
+      font-family: "Segoe UI", sans-serif;
+      color: white;
+      height: 100%;
+      width: 100%;
       overflow: hidden;
     }
 
-    .center {
-      position: absolute;
-      top: 50%; left: 50%;
-      transform: translate(-50%, -50%);
-      text-align: center;
-    }
-
-    .launch-btn {
-      padding: 15px 30px;
-      font-size: 1.2em;
-      border: none;
-      background-color: red;
-      color: white;
-      border-radius: 6px;
-      cursor: pointer;
-      box-shadow: 0 0 10px red;
-      transition: 0.3s;
-    }
-
-    .launch-btn:hover {
-      background-color: darkred;
-    }
-
-    .overlay {
+    .bsod-container {
       display: none;
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: left;
+      padding: 40px;
+      height: 100%;
+      box-sizing: border-box;
+    }
+
+    .bsod-face {
+      font-size: 60px;
+      margin-bottom: 20px;
+    }
+
+    .bsod-text {
+      font-size: 22px;
+      max-width: 700px;
+    }
+
+    .progress {
+      margin-top: 20px;
+      font-size: 18px;
+    }
+
+    .stopcode {
+      margin-top: 40px;
+      font-size: 16px;
+    }
+
+    .qr {
+      position: absolute;
+      bottom: 40px;
+      right: 40px;
+      width: 120px;
+    }
+
+    .start-screen {
+      display: flex;
+      height: 100%;
+      justify-content: center;
+      align-items: center;
       background: black;
       color: white;
-      z-index: 9999;
       flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      padding: 20px;
     }
 
-    .overlay h1 {
-      color: red;
-      font-size: 2em;
-      margin-bottom: 10px;
-    }
-
-    .log {
-      background: #111;
-      color: #0f0;
-      font-family: monospace;
-      font-size: 14px;
-      padding: 15px;
-      max-height: 200px;
-      overflow-y: auto;
-      width: 90%;
-      max-width: 600px;
-      border-radius: 6px;
+    .start-btn {
+      background: white;
+      color: black;
+      font-size: 20px;
+      padding: 15px 30px;
+      border: none;
+      border-radius: 8px;
       margin-top: 20px;
-      text-align: left;
+      cursor: pointer;
     }
 
-    .warning {
-      font-size: 1.2em;
-      margin-top: 20px;
-    }
-
-    .timer {
-      font-size: 2em;
-      color: red;
-      margin-top: 20px;
+    .start-btn:hover {
+      background: #e0e0e0;
     }
   </style>
 </head>
 <body>
 
-  <div class="center" id="startScreen">
-    <h1>kvn.os - Launch Diagnostic Module</h1>
-    <button class="launch-btn" onclick="startVirus()">Start Scan</button>
+<div class="start-screen" id="startScreen">
+  <h1>kvn.os</h1>
+  <p>Click below to initialize system update...</p>
+  <button class="start-btn" onclick="triggerBSOD()">Initialize</button>
+</div>
+
+<div class="bsod-container" id="bsod">
+  <div class="bsod-face">:(</div>
+  <div class="bsod-text">
+    Your PC ran into a problem and needs to restart.<br>
+    We're just collecting some error info, and then we'll restart for you.
+    <div class="progress">100% complete</div>
+    <div class="stopcode">For more information about this issue and possible fixes, visit https://www.windows.com/stopcode<br><br>
+    If you call a support person, give them this info:<br>
+    Stop code: <strong>SYSTEM_THREAD_EXCEPTION_NOT_HANDLED</strong></div>
   </div>
+  <img src="https://i.imgur.com/fY2yE9M.png" alt="QR Code" class="qr">
+</div>
 
-  <div class="overlay" id="virusScreen">
-    <h1>⚠️ UNAUTHORIZED SYSTEM ACCESS DETECTED ⚠️</h1>
-    <div class="warning">Sensitive data has been collected and sent to the owner of kvn.os.</div>
-    <div class="timer">System lock in <span id="countdown">30</span>s</div>
-    <div class="log" id="logBox"></div>
-  </div>
+<script>
+  function enterFullScreen() {
+    const el = document.documentElement;
+    if (el.requestFullscreen) el.requestFullscreen();
+    else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+    else if (el.msRequestFullscreen) el.msRequestFullscreen();
+  }
 
-  <script>
-    function enterFullScreen() {
-      const elem = document.documentElement;
-      if (elem.requestFullscreen) {
-        elem.requestFullscreen();
-      } else if (elem.webkitRequestFullscreen) {
-        elem.webkitRequestFullscreen();
-      } else if (elem.msRequestFullscreen) {
-        elem.msRequestFullscreen();
-      }
-    }
+  function triggerBSOD() {
+    enterFullScreen();
+    document.getElementById("startScreen").style.display = "none";
+    document.getElementById("bsod").style.display = "flex";
+  }
+</script>
 
-    function startVirus() {
-      enterFullScreen();
-      document.getElementById("startScreen").style.display = "none";
-      document.getElementById("virusScreen").style.display = "flex";
-      showLogs();
-      startCountdown();
-    }
-
-    const logs = [
-      "Connecting to kvn.os control server...",
-      "Session token generated: #KOS-9F32A",
-      "Fingerprinting browser...",
-      "OS: Windows 11",
-      "Browser: Chrome 124",
-      "IP: 192.168.1.14 (local)",
-      "Public IP: 185.47.xx.xx",
-      "Battery: 84%",
-      "Cookies found: 6",
-      "LocalStorage size: 2.1MB",
-      "Permissions: Notifications - Granted",
-      "Uploading captured data to kvn.os/secure...",
-      "Upload complete. ID: 6X0-KVN-4453",
-      "Marking session for owner review...",
-      "Logging report to audit trail..."
-    ];
-
-    function showLogs() {
-      const logBox = document.getElementById("logBox");
-      let i = 0;
-      const loop = setInterval(() => {
-        if (i >= logs.length) return clearInterval(loop);
-        logBox.innerHTML += logs[i++] + "<br>";
-        logBox.scrollTop = logBox.scrollHeight;
-      }, 600);
-    }
-
-    function startCountdown() {
-      let time = 30;
-      const countdownEl = document.getElementById('countdown');
-      const timer = setInterval(() => {
-        time--;
-        countdownEl.textContent = time;
-        if (time <= 0) {
-          clearInterval(timer);
-          fakeLock();
-        }
-      }, 1000);
-    }
-
-    function fakeLock() {
-      document.body.innerHTML = `
-        <div class="overlay">
-          <h1>🔒 SYSTEM LOCKED BY kvn.os 🔒</h1>
-          <p>Your activity has been recorded.<br>Access is now restricted.</p>
-        </div>`;
-    }
-  </script>
 </body>
 </html>
