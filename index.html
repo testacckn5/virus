@@ -1,237 +1,505 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>kvn.os</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>kvn.os - Fake Virus</title>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    html, body { width: 100%; height: 100%; overflow: hidden; font-family: 'Segoe UI', sans-serif; background: black; color: white; }
-    body.fullscreen { cursor: none; }
-    .center { display: flex; align-items: center; justify-content: center; flex-direction: column; height: 100%; text-align: center; }
+    @import url('https://fonts.googleapis.com/css2?family=Segoe+UI&display=swap');
 
-    /* Start Screen */
-    #start { background: black; }
-    #start button {
-      margin-top: 20px; padding: 10px 20px; font-size: 18px; background: white; color: black; border: none; border-radius: 6px; cursor: pointer;
+    html, body {
+      margin: 0; padding: 0;
+      width: 100%; height: 100%;
+      background: #0078d7;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      color: white;
+      overflow: hidden;
+      user-select: none;
     }
 
-    /* BSOD */
-    #bsod { background: #0078D7; display: none; flex-direction: column; justify-content: center; align-items: center; text-align: left; padding: 40px; }
-    .bsod-face { font-size: 60px; margin-bottom: 20px; }
-    .bsod-text { font-size: 22px; max-width: 700px; }
-    .stopcode { margin-top: 30px; font-size: 16px; }
-    .qr { width: 120px; margin-top: 30px; }
-
-    /* Reboot */
-    #reboot { display: none; flex-direction: column; justify-content: center; align-items: center; }
-    .loading-bar { width: 300px; height: 10px; background: #222; border-radius: 5px; overflow: hidden; margin-top: 20px; }
-    .loading-fill { width: 0%; height: 100%; background: #00ffff; transition: width 3s linear; }
-
-    /* Login */
-    #login { display: none; flex-direction: column; align-items: center; justify-content: center; }
-    .login-box { background: rgba(255,255,255,0.05); padding: 40px; border-radius: 10px; text-align: center; }
-    .login-box input {
-      margin-top: 15px; padding: 10px; border: none; font-size: 18px; background: #333; color: white; width: 200px; text-align: center;
+    #bsod, #reboot, #login, #desktop {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      text-align: center;
+    }
+    #bsod {
+      background: #0078d7;
+      flex-direction: column;
+      font-size: 1.3rem;
+      padding: 3rem;
+    }
+    #bsod h1 {
+      font-size: 6rem;
+      margin: 0;
+      font-weight: 200;
+      line-height: 1;
+    }
+    #bsod p {
+      margin: 1rem 0;
+    }
+    #bsod img {
+      margin-top: 2rem;
+      width: 130px;
+      image-rendering: pixelated;
+    }
+    #progress {
+      margin-top: 1.5rem;
+      font-weight: 600;
     }
 
-    /* Desktop */
-    #desktop { display: none; background: url('https://wallpaperaccess.com/full/5693941.jpg') no-repeat center center/cover; position: relative; }
-    .icon { position: absolute; text-align: center; color: white; cursor: pointer; width: 80px; }
-    .icon img { width: 48px; margin-bottom: 5px; }
-    .window {
-      position: absolute; top: 100px; left: 100px; width: 400px; height: 300px; background: #1e1e1e; color: white;
-      border: 1px solid #444; border-radius: 6px; box-shadow: 0 0 10px black; z-index: 999; padding: 10px;
-    }
-    .taskbar {
-      position: absolute; bottom: 0; left: 0; right: 0; height: 40px; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: space-between; color: white; padding: 0 20px;
+    #reboot {
+      background: black;
+      font-size: 2rem;
+      color: white;
+      font-weight: 500;
     }
 
-    /* Popup */
-    #popup {
-      position: absolute; top: 50px; right: 50px; background: red; padding: 10px 20px; border-radius: 5px; font-weight: bold; display: none;
-      animation: popupBlink 0.4s ease-in-out infinite alternate;
+    #login {
+      background: url('https://wallpaperaccess.com/full/13453.jpg') no-repeat center center/cover;
+      filter: blur(4px);
+      position: relative;
     }
-    @keyframes popupBlink {
-      0% { transform: scale(1); }
-      100% { transform: scale(1.05); }
+    #login .login-container {
+      position: absolute;
+      top: 40%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0,0,0,0.55);
+      padding: 2rem 3rem;
+      border-radius: 10px;
+      color: white;
+      text-align: center;
+      box-shadow: 0 0 15px #000a;
+      font-weight: 600;
+      font-size: 1.2rem;
+    }
+    #login input {
+      margin-top: 1rem;
+      padding: 0.6rem 1rem;
+      font-size: 1.1rem;
+      border-radius: 6px;
+      border: none;
+      width: 230px;
+      color: #333;
+    }
+    #login input:disabled {
+      background: #ccc;
+      cursor: not-allowed;
     }
 
-    #exitScreen { display: none; background: black; color: lime; font-size: 24px; justify-content: center; align-items: center; }
+    #desktop {
+      display: none;
+      background: url('https://wallpaperaccess.com/full/1056249.jpg') no-repeat center center/cover;
+      position: relative;
+      flex-direction: column;
+      user-select: none;
+      color: white;
+      height: 100vh;
+      width: 100vw;
+      overflow: hidden;
+    }
+
+    /* Taskbar */
+    #taskbar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 48px;
+      background: rgba(24, 24, 24, 0.9);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 20px;
+      box-shadow: 0 -1px 10px #0008;
+      user-select: none;
+      font-size: 14px;
+      z-index: 1000;
+    }
+
+    /* Taskbar container for centered icons */
+    #taskbar-center {
+      display: flex;
+      gap: 18px;
+      align-items: center;
+    }
+
+    /* Start button */
+    #start-btn {
+      width: 40px; height: 40px;
+      border-radius: 8px;
+      background: transparent;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+    #start-btn:hover {
+      background: rgba(255, 255, 255, 0.15);
+    }
+    #start-btn svg {
+      fill: white;
+      width: 20px; height: 20px;
+    }
+
+    /* Taskbar icons */
+    .taskbar-icon {
+      width: 38px; height: 38px;
+      border-radius: 8px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+    .taskbar-icon:hover {
+      background: rgba(255, 255, 255, 0.15);
+    }
+    .taskbar-icon img {
+      max-width: 22px;
+      max-height: 22px;
+      user-select: none;
+      pointer-events: none;
+      filter: invert(100%) brightness(150%);
+    }
+
+    /* System tray */
+    #system-tray {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: white;
+      font-size: 13px;
+      font-weight: 500;
+      user-select: none;
+      padding-right: 10px;
+      font-family: "Segoe UI", sans-serif;
+    }
+
+    /* Clock */
+    #clock {
+      min-width: 65px;
+      text-align: center;
+    }
+
+    /* Popup alerts */
+    #alert {
+      position: fixed;
+      bottom: 70px;
+      right: 20px;
+      width: 320px;
+      background: #1a1a1a;
+      border-radius: 10px;
+      box-shadow: 0 0 10px #0009;
+      color: #eee;
+      font-family: "Segoe UI", sans-serif;
+      padding: 16px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.4s ease;
+      z-index: 1050;
+    }
+    #alert.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    #alert-header {
+      font-weight: 700;
+      margin-bottom: 8px;
+      font-size: 17px;
+      color: #cc0000;
+    }
+    #alert-msg {
+      font-size: 14px;
+      line-height: 1.3;
+    }
+    #alert-close {
+      position: absolute;
+      top: 8px; right: 10px;
+      font-weight: 700;
+      cursor: pointer;
+      color: #cc0000;
+      font-size: 18px;
+    }
+
+    /* Edge-like browser window */
+    #edge-window {
+      position: fixed;
+      top: 60px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 80vw;
+      height: 75vh;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.7);
+      display: none;
+      flex-direction: column;
+      overflow: hidden;
+      z-index: 1100;
+      user-select: text;
+      color: black;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    #edge-header {
+      height: 38px;
+      background: #0078d7;
+      color: white;
+      padding: 0 15px;
+      display: flex;
+      align-items: center;
+      font-weight: 600;
+      font-size: 15px;
+      justify-content: space-between;
+      user-select: none;
+    }
+
+    #edge-close {
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 18px;
+    }
+
+    #edge-content {
+      padding: 15px;
+      overflow-y: auto;
+      font-size: 14px;
+      line-height: 1.5;
+      flex-grow: 1;
+    }
+
+    /* Terminal */
+    #terminal {
+      background: black;
+      color: #00ff00;
+      padding: 1rem;
+      border-radius: 6px;
+      width: 90%;
+      height: 60vh;
+      overflow-y: auto;
+      margin: 2rem auto 0;
+      font-family: monospace;
+      font-size: 14px;
+      box-shadow: 0 0 10px #00ff00aa;
+      user-select: none;
+    }
   </style>
 </head>
 <body>
 
-<div id="start" class="center">
-  <h1>kvn.os</h1>
-  <p>Initialize system update?</p>
-  <button onclick="startVirus()">Initialize</button>
+<!-- BSOD -->
+<div id="bsod">
+  <h1>:(</h1>
+  <p>Your PC ran into a problem and needs to restart. We're just collecting some error info, and then we'll restart for you.</p>
+  <div id="progress">0% complete</div>
+  <p>For more information about this issue and possible fixes, visit https://windows.com/stopcode</p>
+  <p>Stop Code: FAKE_VIRUS_KVN_OS</p>
+  <img src="https://i.imgur.com/YkzG8XU.png" alt="QR Code" />
 </div>
 
-<div id="bsod" class="center">
-  <div class="bsod-face">:(</div>
-  <div class="bsod-text">
-    Your PC ran into a problem and needs to restart.<br>
-    We're just collecting some error info, and then we'll restart for you.
-    <div class="stopcode"><br>Stop code: SYSTEM_THREAD_EXCEPTION_NOT_HANDLED</div>
-    <img class="qr" src="https://i.imgur.com/fY2yE9M.png" alt="QR">
+<!-- Reboot -->
+<div id="reboot">Restarting...</div>
+
+<!-- Login -->
+<div id="login">
+  <div class="login-container">
+    <h2>Welcome</h2>
+    <input type="password" placeholder="Password" disabled />
+    <p>Signing in...</p>
   </div>
 </div>
 
-<div id="reboot" class="center">
-  <h2>Restarting...</h2>
-  <div class="loading-bar"><div class="loading-fill" id="loadingBar"></div></div>
-</div>
-
-<div id="login" class="center">
-  <div class="login-box">
-    <h2>User</h2>
-    <input type="password" placeholder="Enter password" id="passwordInput" onkeydown="if(event.key==='Enter')loginSuccess()">
-  </div>
-</div>
-
+<!-- Desktop -->
 <div id="desktop">
-  <div class="icon" style="top: 60px; left: 60px;" onclick="openWindow('passwords')">
-    <img src="https://img.icons8.com/fluency/48/000000/notepad.png"/>
-    <div>Passwords.txt</div>
-  </div>
-  <div class="icon" style="top: 160px; left: 60px;" onclick="openWindow('terminal')">
-    <img src="https://img.icons8.com/fluency/48/000000/console.png"/>
-    <div>Terminal</div>
-  </div>
-  <div class="icon" style="top: 260px; left: 60px;" onclick="openWindow('logs')">
-    <img src="https://img.icons8.com/fluency/48/000000/activity-history.png"/>
-    <div>System Log</div>
-  </div>
-  <div class="taskbar">
-    <div>Start</div>
-    <div id="clock"></div>
+  <div id="terminal"></div>
+
+  <!-- Taskbar -->
+  <div id="taskbar">
+    <div id="start-btn" title="Start Menu" aria-label="Start Menu">
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path d="M3 4h6v16H3zM9 4h6v7H9zM15 11h6v9h-6z"/>
+      </svg>
+    </div>
+
+    <div id="taskbar-center">
+      <div class="taskbar-icon" id="edge-icon" title="Microsoft Edge">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/7/7e/Microsoft_Edge_logo_%282019%29.svg" alt="Edge Icon" />
+      </div>
+      <div class="taskbar-icon" title="File Explorer">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/9/9a/Windows_File_Explorer_icon.png" alt="File Explorer Icon" />
+      </div>
+      <div class="taskbar-icon" title="Recycle Bin">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/4/42/Recycle_Bin_icon.svg" alt="Recycle Bin Icon" />
+      </div>
+    </div>
+
+    <div id="system-tray">
+      <div id="volume" title="Volume">🔊</div>
+      <div id="wifi" title="Wi-Fi">📶</div>
+      <div id="clock"></div>
+    </div>
   </div>
 </div>
 
-<div id="popup">SYSTEM BREACH DETECTED</div>
+<!-- Alert popup -->
+<div id="alert">
+  <div id="alert-close" title="Close alert">&times;</div>
+  <div id="alert-header">Windows Security Alert</div>
+  <div id="alert-msg">Virus detected! Immediate action required!</div>
+</div>
 
-<div id="exitScreen" class="center">Prank exited. You're safe 😎</div>
+<!-- Fake Edge browser window -->
+<div id="edge-window">
+  <div id="edge-header">
+    Virus Report - Microsoft Edge
+    <div id="edge-close" title="Close window">&times;</div>
+  </div>
+  <div id="edge-content">
+    <h2>Security Breach Detected</h2>
+    <p>Your system has been compromised by <strong>kvn.os</strong>.</p>
+    <p>All your sensitive information has been collected and sent to the owner.</p>
+    <p>Recommended Actions:</p>
+    <ul>
+      <li>Disconnect from the internet immediately.</li>
+      <li>Run a full antivirus scan.</li>
+      <li>Change all passwords from a different device.</li>
+    </ul>
+    <p><em>This is a simulation.</em></p>
+  </div>
+</div>
 
 <script>
-  let ctrl = false, k = false, v = false, n = false;
+  // Elements
+  const bsod = document.getElementById("bsod");
+  const reboot = document.getElementById("reboot");
+  const login = document.getElementById("login");
+  const desktop = document.getElementById("desktop");
+  const terminal = document.getElementById("terminal");
+  const progress = document.getElementById("progress");
+  const alertPopup = document.getElementById("alert");
+  const alertClose = document.getElementById("alert-close");
+  const edgeWindow = document.getElementById("edge-window");
+  const edgeClose = document.getElementById("edge-close");
+  const edgeIcon = document.getElementById("edge-icon");
+  const clock = document.getElementById("clock");
 
-  function startVirus() {
-    goFullscreen();
-    document.body.classList.add('fullscreen');
-    document.getElementById("start").style.display = "none";
-    document.getElementById("bsod").style.display = "flex";
-
-    setTimeout(() => {
-      document.getElementById("bsod").style.display = "none";
-      document.getElementById("reboot").style.display = "flex";
-      document.getElementById("loadingBar").style.width = "100%";
-    }, 4000);
-
-    setTimeout(() => {
-      document.getElementById("reboot").style.display = "none";
-      document.getElementById("login").style.display = "flex";
-    }, 8000);
-  }
-
-  function loginSuccess() {
-    document.getElementById("login").style.display = "none";
-    document.getElementById("desktop").style.display = "block";
-    document.body.classList.remove('fullscreen');
-    document.body.style.cursor = "default";
-    startClock();
-    breachPopup();
-  }
-
-  function openWindow(type) {
-    let win = document.createElement("div");
-    win.className = "window";
-
-    if (type === 'passwords') {
-      win.innerHTML = `<h3>Passwords.txt</h3><pre>
-Gmail: johnsmith123@gmail.com
-Password: hunter2
-
-Instagram: johnsmith.ig
-Password: ilovekvn
-
-Discord: kvn#0001
-Password: 123virus
-</pre>`;
-    }
-    else if (type === 'terminal') {
-      win.innerHTML = `<h3>Terminal</h3><pre id="termText"></pre>`;
+  // Progress BSOD to reboot to login to desktop
+  let percent = 0;
+  let interval = setInterval(() => {
+    percent++;
+    progress.innerText = `${percent}% complete`;
+    if (percent >= 100) {
+      clearInterval(interval);
+      bsod.style.display = "none";
+      reboot.style.display = "flex";
       setTimeout(() => {
-        autoType(`Injecting payload...
-Uploading credentials to kvn.os mainframe...
-Tracking enabled.
-Self-delete scheduled.
-`, document.getElementById("termText"), 50);
-      }, 500);
-    }
-    else if (type === 'logs') {
-      win.innerHTML = `<h3>System Logs</h3><pre>
-[!] Breach detected from IP: 103.29.13.5
-[✓] Credentials uploaded to kvn.os/mainframe
-[✓] Session ID: CHRM-9342-GH
-[!] Surveillance activated
-</pre>`;
-    }
+        reboot.style.display = "none";
+        login.style.display = "flex";
 
-    document.getElementById("desktop").appendChild(win);
-  }
+        // Simulate login delay, then show desktop
+        setTimeout(() => {
+          login.style.display = "none";
+          desktop.style.display = "flex";
+          playStartupSound();
+          showAlert();
+          typeTerminalIntro();
+          updateClock();
+          setInterval(updateClock, 1000);
+        }, 3500);
+      }, 2500);
+    }
+  }, 45);
 
-  function autoType(text, el, speed) {
+  // Terminal typing simulation
+  const terminalLines = [
+    "C:\\Users\\KVN>_",
+    "Initializing system scan...",
+    "Scanning for threats...",
+    "Threat detected: kvn.os virus",
+    "Collecting sensitive data...",
+    "Data transfer to owner: Complete",
+    "System breach confirmed!",
+    "Run 'help' for commands.",
+    ""
+  ];
+
+  function typeTerminalIntro() {
     let i = 0;
+    let idx = 0;
+    terminal.innerHTML = "";
     function type() {
-      if (i < text.length) {
-        el.textContent += text.charAt(i);
+      if (idx < terminalLines[i].length) {
+        terminal.innerHTML += terminalLines[i].charAt(idx);
+        idx++;
+        setTimeout(type, 60);
+      } else {
+        terminal.innerHTML += "<br/>";
         i++;
-        setTimeout(type, speed);
+        idx = 0;
+        if (i < terminalLines.length) {
+          setTimeout(type, 300);
+        }
       }
     }
     type();
   }
 
-  function goFullscreen() {
-    const el = document.documentElement;
-    if (el.requestFullscreen) el.requestFullscreen();
-    else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+  // Show fake Windows Defender alert popup
+  function showAlert() {
+    alertPopup.classList.add("show");
+  }
+  alertClose.onclick = () => {
+    alertPopup.classList.remove("show");
+  };
+
+  // Edge icon opens fake browser
+  edgeIcon.onclick = () => {
+    edgeWindow.style.display = "flex";
+  };
+  edgeClose.onclick = () => {
+    edgeWindow.style.display = "none";
+  };
+
+  // Clock update
+  function updateClock() {
+    const now = new Date();
+    const options = { hour: "2-digit", minute: "2-digit" };
+    clock.textContent = now.toLocaleTimeString([], options);
   }
 
-  function startClock() {
-    function update() {
-      const now = new Date();
-      const h = now.getHours().toString().padStart(2, '0');
-      const m = now.getMinutes().toString().padStart(2, '0');
-      document.getElementById("clock").textContent = `${h}:${m}`;
-    }
-    update();
-    setInterval(update, 60000);
+  // Startup sound (Windows 11 startup tone simulation)
+  function playStartupSound() {
+    const audioCtx = new AudioContext();
+    const o = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    o.type = 'triangle';
+    o.frequency.setValueAtTime(440, audioCtx.currentTime);
+    g.gain.setValueAtTime(0, audioCtx.currentTime);
+    g.gain.linearRampToValueAtTime(0.15, audioCtx.currentTime + 0.1);
+    o.connect(g);
+    g.connect(audioCtx.destination);
+    o.start();
+    o.frequency.exponentialRampToValueAtTime(660, audioCtx.currentTime + 0.5);
+    g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.6);
+    o.stop(audioCtx.currentTime + 0.6);
   }
 
-  function breachPopup() {
-    setInterval(() => {
-      const pop = document.getElementById("popup");
-      pop.style.display = "block";
-      setTimeout(() => pop.style.display = "none", 2000);
-    }, 7000);
-  }
-
-  // Exit key combo
-  window.addEventListener("keydown", e => {
-    if (e.ctrlKey) ctrl = true;
-    if (e.key.toLowerCase() === 'k') k = true;
-    if (e.key.toLowerCase() === 'v') v = true;
-    if (e.key.toLowerCase() === 'n') n = true;
-
-    if (ctrl && k && v && n) {
-      document.exitFullscreen();
-      document.body.innerHTML = "";
-      document.body.style.cursor = "default";
-      document.getElementById("exitScreen").style.display = "flex";
+  // Disable context menu & certain keys (Alt+F4, Ctrl+W)
+  document.addEventListener("contextmenu", e => e.preventDefault());
+  document.addEventListener("keydown", e => {
+    if ((e.altKey && e.key === "F4") || (e.ctrlKey && e.key === "w")) {
+      e.preventDefault();
     }
   });
+
 </script>
+
 </body>
 </html>
