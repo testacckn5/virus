@@ -2,119 +2,236 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>kvn.os Crash</title>
+  <title>kvn.os</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    html, body {
-      margin: 0;
-      padding: 0;
-      background: #0078D7; /* Windows BSOD Blue */
-      font-family: "Segoe UI", sans-serif;
-      color: white;
-      height: 100%;
-      width: 100%;
-      overflow: hidden;
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; overflow: hidden; font-family: 'Segoe UI', sans-serif; background: black; color: white; }
+    body.fullscreen { cursor: none; }
+    .center { display: flex; align-items: center; justify-content: center; flex-direction: column; height: 100%; text-align: center; }
+
+    /* Start Screen */
+    #start { background: black; }
+    #start button {
+      margin-top: 20px; padding: 10px 20px; font-size: 18px; background: white; color: black; border: none; border-radius: 6px; cursor: pointer;
     }
 
-    .bsod-container {
-      display: none;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      text-align: left;
-      padding: 40px;
-      height: 100%;
-      box-sizing: border-box;
+    /* BSOD */
+    #bsod { background: #0078D7; display: none; flex-direction: column; justify-content: center; align-items: center; text-align: left; padding: 40px; }
+    .bsod-face { font-size: 60px; margin-bottom: 20px; }
+    .bsod-text { font-size: 22px; max-width: 700px; }
+    .stopcode { margin-top: 30px; font-size: 16px; }
+    .qr { width: 120px; margin-top: 30px; }
+
+    /* Reboot */
+    #reboot { display: none; flex-direction: column; justify-content: center; align-items: center; }
+    .loading-bar { width: 300px; height: 10px; background: #222; border-radius: 5px; overflow: hidden; margin-top: 20px; }
+    .loading-fill { width: 0%; height: 100%; background: #00ffff; transition: width 3s linear; }
+
+    /* Login */
+    #login { display: none; flex-direction: column; align-items: center; justify-content: center; }
+    .login-box { background: rgba(255,255,255,0.05); padding: 40px; border-radius: 10px; text-align: center; }
+    .login-box input {
+      margin-top: 15px; padding: 10px; border: none; font-size: 18px; background: #333; color: white; width: 200px; text-align: center;
     }
 
-    .bsod-face {
-      font-size: 60px;
-      margin-bottom: 20px;
+    /* Desktop */
+    #desktop { display: none; background: url('https://wallpaperaccess.com/full/5693941.jpg') no-repeat center center/cover; position: relative; }
+    .icon { position: absolute; text-align: center; color: white; cursor: pointer; width: 80px; }
+    .icon img { width: 48px; margin-bottom: 5px; }
+    .window {
+      position: absolute; top: 100px; left: 100px; width: 400px; height: 300px; background: #1e1e1e; color: white;
+      border: 1px solid #444; border-radius: 6px; box-shadow: 0 0 10px black; z-index: 999; padding: 10px;
+    }
+    .taskbar {
+      position: absolute; bottom: 0; left: 0; right: 0; height: 40px; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: space-between; color: white; padding: 0 20px;
     }
 
-    .bsod-text {
-      font-size: 22px;
-      max-width: 700px;
+    /* Popup */
+    #popup {
+      position: absolute; top: 50px; right: 50px; background: red; padding: 10px 20px; border-radius: 5px; font-weight: bold; display: none;
+      animation: popupBlink 0.4s ease-in-out infinite alternate;
+    }
+    @keyframes popupBlink {
+      0% { transform: scale(1); }
+      100% { transform: scale(1.05); }
     }
 
-    .progress {
-      margin-top: 20px;
-      font-size: 18px;
-    }
-
-    .stopcode {
-      margin-top: 40px;
-      font-size: 16px;
-    }
-
-    .qr {
-      position: absolute;
-      bottom: 40px;
-      right: 40px;
-      width: 120px;
-    }
-
-    .start-screen {
-      display: flex;
-      height: 100%;
-      justify-content: center;
-      align-items: center;
-      background: black;
-      color: white;
-      flex-direction: column;
-    }
-
-    .start-btn {
-      background: white;
-      color: black;
-      font-size: 20px;
-      padding: 15px 30px;
-      border: none;
-      border-radius: 8px;
-      margin-top: 20px;
-      cursor: pointer;
-    }
-
-    .start-btn:hover {
-      background: #e0e0e0;
-    }
+    #exitScreen { display: none; background: black; color: lime; font-size: 24px; justify-content: center; align-items: center; }
   </style>
 </head>
 <body>
 
-<div class="start-screen" id="startScreen">
+<div id="start" class="center">
   <h1>kvn.os</h1>
-  <p>Click below to initialize system update...</p>
-  <button class="start-btn" onclick="triggerBSOD()">Initialize</button>
+  <p>Initialize system update?</p>
+  <button onclick="startVirus()">Initialize</button>
 </div>
 
-<div class="bsod-container" id="bsod">
+<div id="bsod" class="center">
   <div class="bsod-face">:(</div>
   <div class="bsod-text">
     Your PC ran into a problem and needs to restart.<br>
     We're just collecting some error info, and then we'll restart for you.
-    <div class="progress">100% complete</div>
-    <div class="stopcode">For more information about this issue and possible fixes, visit https://www.windows.com/stopcode<br><br>
-    If you call a support person, give them this info:<br>
-    Stop code: <strong>SYSTEM_THREAD_EXCEPTION_NOT_HANDLED</strong></div>
+    <div class="stopcode"><br>Stop code: SYSTEM_THREAD_EXCEPTION_NOT_HANDLED</div>
+    <img class="qr" src="https://i.imgur.com/fY2yE9M.png" alt="QR">
   </div>
-  <img src="https://i.imgur.com/fY2yE9M.png" alt="QR Code" class="qr">
 </div>
 
+<div id="reboot" class="center">
+  <h2>Restarting...</h2>
+  <div class="loading-bar"><div class="loading-fill" id="loadingBar"></div></div>
+</div>
+
+<div id="login" class="center">
+  <div class="login-box">
+    <h2>User</h2>
+    <input type="password" placeholder="Enter password" id="passwordInput" onkeydown="if(event.key==='Enter')loginSuccess()">
+  </div>
+</div>
+
+<div id="desktop">
+  <div class="icon" style="top: 60px; left: 60px;" onclick="openWindow('passwords')">
+    <img src="https://img.icons8.com/fluency/48/000000/notepad.png"/>
+    <div>Passwords.txt</div>
+  </div>
+  <div class="icon" style="top: 160px; left: 60px;" onclick="openWindow('terminal')">
+    <img src="https://img.icons8.com/fluency/48/000000/console.png"/>
+    <div>Terminal</div>
+  </div>
+  <div class="icon" style="top: 260px; left: 60px;" onclick="openWindow('logs')">
+    <img src="https://img.icons8.com/fluency/48/000000/activity-history.png"/>
+    <div>System Log</div>
+  </div>
+  <div class="taskbar">
+    <div>Start</div>
+    <div id="clock"></div>
+  </div>
+</div>
+
+<div id="popup">SYSTEM BREACH DETECTED</div>
+
+<div id="exitScreen" class="center">Prank exited. You're safe 😎</div>
+
 <script>
-  function enterFullScreen() {
+  let ctrl = false, k = false, v = false, n = false;
+
+  function startVirus() {
+    goFullscreen();
+    document.body.classList.add('fullscreen');
+    document.getElementById("start").style.display = "none";
+    document.getElementById("bsod").style.display = "flex";
+
+    setTimeout(() => {
+      document.getElementById("bsod").style.display = "none";
+      document.getElementById("reboot").style.display = "flex";
+      document.getElementById("loadingBar").style.width = "100%";
+    }, 4000);
+
+    setTimeout(() => {
+      document.getElementById("reboot").style.display = "none";
+      document.getElementById("login").style.display = "flex";
+    }, 8000);
+  }
+
+  function loginSuccess() {
+    document.getElementById("login").style.display = "none";
+    document.getElementById("desktop").style.display = "block";
+    document.body.classList.remove('fullscreen');
+    document.body.style.cursor = "default";
+    startClock();
+    breachPopup();
+  }
+
+  function openWindow(type) {
+    let win = document.createElement("div");
+    win.className = "window";
+
+    if (type === 'passwords') {
+      win.innerHTML = `<h3>Passwords.txt</h3><pre>
+Gmail: johnsmith123@gmail.com
+Password: hunter2
+
+Instagram: johnsmith.ig
+Password: ilovekvn
+
+Discord: kvn#0001
+Password: 123virus
+</pre>`;
+    }
+    else if (type === 'terminal') {
+      win.innerHTML = `<h3>Terminal</h3><pre id="termText"></pre>`;
+      setTimeout(() => {
+        autoType(`Injecting payload...
+Uploading credentials to kvn.os mainframe...
+Tracking enabled.
+Self-delete scheduled.
+`, document.getElementById("termText"), 50);
+      }, 500);
+    }
+    else if (type === 'logs') {
+      win.innerHTML = `<h3>System Logs</h3><pre>
+[!] Breach detected from IP: 103.29.13.5
+[✓] Credentials uploaded to kvn.os/mainframe
+[✓] Session ID: CHRM-9342-GH
+[!] Surveillance activated
+</pre>`;
+    }
+
+    document.getElementById("desktop").appendChild(win);
+  }
+
+  function autoType(text, el, speed) {
+    let i = 0;
+    function type() {
+      if (i < text.length) {
+        el.textContent += text.charAt(i);
+        i++;
+        setTimeout(type, speed);
+      }
+    }
+    type();
+  }
+
+  function goFullscreen() {
     const el = document.documentElement;
     if (el.requestFullscreen) el.requestFullscreen();
     else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
-    else if (el.msRequestFullscreen) el.msRequestFullscreen();
   }
 
-  function triggerBSOD() {
-    enterFullScreen();
-    document.getElementById("startScreen").style.display = "none";
-    document.getElementById("bsod").style.display = "flex";
+  function startClock() {
+    function update() {
+      const now = new Date();
+      const h = now.getHours().toString().padStart(2, '0');
+      const m = now.getMinutes().toString().padStart(2, '0');
+      document.getElementById("clock").textContent = `${h}:${m}`;
+    }
+    update();
+    setInterval(update, 60000);
   }
+
+  function breachPopup() {
+    setInterval(() => {
+      const pop = document.getElementById("popup");
+      pop.style.display = "block";
+      setTimeout(() => pop.style.display = "none", 2000);
+    }, 7000);
+  }
+
+  // Exit key combo
+  window.addEventListener("keydown", e => {
+    if (e.ctrlKey) ctrl = true;
+    if (e.key.toLowerCase() === 'k') k = true;
+    if (e.key.toLowerCase() === 'v') v = true;
+    if (e.key.toLowerCase() === 'n') n = true;
+
+    if (ctrl && k && v && n) {
+      document.exitFullscreen();
+      document.body.innerHTML = "";
+      document.body.style.cursor = "default";
+      document.getElementById("exitScreen").style.display = "flex";
+    }
+  });
 </script>
-
 </body>
 </html>
